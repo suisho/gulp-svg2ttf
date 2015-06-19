@@ -18,7 +18,7 @@ function svg2ttfTransform(opt) {
 
     // Use the buffered content
       try {
-        buf = new Buffer(svg2ttf(String(buf)).buffer);
+        buf = new Buffer(svg2ttf(String(buf), {ts: opt.ts}).buffer);
         cb(null, buf);
       } catch(err) {
         cb(new gutil.PluginError(PLUGIN_NAME, err, {showStack: true}));
@@ -35,7 +35,7 @@ function svg2ttfGulp(options) {
   options.clone = options.clone || false;
 
   var stream = Stream.Transform({objectMode: true});
-  
+
   stream._transform = function(file, unused, done) {
      // When null just pass through
     if(file.isNull()) {
@@ -69,7 +69,7 @@ function svg2ttfGulp(options) {
     // Buffers
     if(file.isBuffer()) {
       try {
-        file.contents = new Buffer(svg2ttf(String(file.contents)).buffer);
+        file.contents = new Buffer(svg2ttf(String(file.contents), {ts: options.ts}).buffer);
       } catch(err) {
         stream.emit('error', 
           new gutil.PluginError(PLUGIN_NAME, err, {showStack: true}));
@@ -77,13 +77,13 @@ function svg2ttfGulp(options) {
 
     // Streams
     } else {
-      file.contents = file.contents.pipe(new BufferStreams(svg2ttfTransform()));
+      file.contents = file.contents.pipe(new BufferStreams(svg2ttfTransform({ts: options.ts})));
     }
 
     stream.push(file);
     done();
   };
-  
+
   return stream;
 
 };
